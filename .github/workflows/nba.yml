@@ -2,7 +2,7 @@ name: NBA Daily Prediction
 
 on:
   schedule:
-    - cron: '0 1 * * *'   # 每天UTC 01:00运行（北京时间09:00）
+    - cron: '0 1 * * *'   # 每天 UTC 01:00 = 北京时间 09:00
   workflow_dispatch:
 
 jobs:
@@ -13,7 +13,7 @@ jobs:
       - name: 拉取代码
         uses: actions/checkout@v3
 
-      - name: 安装Python
+      - name: 安装 Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.10'
@@ -21,6 +21,17 @@ jobs:
       - name: 安装依赖
         run: |
           pip install pandas numpy xgboost nba_api joblib
+
+      - name: 进入模型目录
+        run: |
+          ls
+          cd nba_quant_model
+          ls
+
+      - name: 训练模型
+        run: |
+          cd nba_quant_model
+          python train.py
 
       - name: 运行预测
         run: |
