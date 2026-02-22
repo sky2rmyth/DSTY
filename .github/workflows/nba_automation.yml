@@ -1,0 +1,40 @@
+name: NBA Automation
+
+on:
+  schedule:
+    - cron: '40 13 * * *' # 北京时间21:40
+    - cron: '0 6 * * *'   # 北京时间14:00
+  workflow_dispatch:
+
+jobs:
+  run-jobs:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run prediction task
+        if: github.event_name == 'workflow_dispatch' || github.event.schedule == '40 13 * * *'
+        run: python -m actions.run_prediction
+
+      - name: Run review task
+        if: github.event_name == 'workflow_dispatch' || github.event.schedule == '0 6 * * *'
+        run: python -m actions.run_review
+
+      - name: Commit CSV updates
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add database/storage/*.csv || true
+          git diff --staged --quiet || git commit -m "chore: update NBA CSV data"
+          git push
